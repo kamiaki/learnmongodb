@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>文件上传</div>
+    <form   method="post" enctype="multipart/form-data"
+            th:action='${
+    #httpServletRequest.getScheme()
+    + "://"
+    + #httpServletRequest.getServerName()
+    + ":"
+    + #httpServletRequest.getServerPort()
+    + #httpServletRequest.getContextPath()
+    + "/file"
+    + "/upload"
+    }'>
+        <input type="file" name="file">
+        <input type="submit" value="Upload" />
+    </form>
+</body>
+</html>
