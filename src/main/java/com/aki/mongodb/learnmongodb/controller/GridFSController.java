@@ -11,8 +11,12 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,26 +75,48 @@ public class GridFSController {
      * @param fileId 文件id     */
     @RequestMapping("/get/{fileId}")
     @ResponseBody
-    public void getFile(@PathVariable("fileId") String fileId) {
+    public void getFile(@PathVariable("fileId") String fileId, HttpServletResponse response) {
 
         //根据id查询文件
         GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(fileId)));
-
         if (gridFSFile == null) {
             throw new RuntimeException("No file with id: " + fileId);
         }
         //获取流对象
         GridFsResource resource = gridFsTemplate.getResource(gridFSFile);
 
+        InputStream inputStream = null;
+        BufferedInputStream bis = null;
+        OutputStream os;
         /*可根据实际需求进行数据的获取*/
         try {
-            //获取流中的数据
-            String content = IOUtils.toString(resource.getInputStream(), "UTF-8");
-            //获取byte[]信息
-            byte[] bytes = IOUtils.toByteArray(resource.getInputStream());
+            os = response.getOutputStream();
 
+            inputStream = resource.getInputStream();
+            bis = new BufferedInputStream(inputStream);
+            byte[] buffer = new byte[1024];
+            int i = bis.read(buffer);
+            while (i != -1) {
+                os.write(buffer, 0, i);
+                i = bis.read(buffer);
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
