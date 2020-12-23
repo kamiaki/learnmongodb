@@ -80,7 +80,8 @@ public class GridFSController {
     public void getFile(@PathVariable("fileId") String fileId, HttpServletResponse response) {
 
         //根据id查询文件
-        GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(fileId)));
+//        GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(fileId)));
+        GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("metadata.tags").is(fileId)));
         if (gridFSFile == null) {
             throw new RuntimeException("No file with id: " + fileId);
         }
